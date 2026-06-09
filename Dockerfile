@@ -32,6 +32,14 @@ RUN chmod -R 755 storage bootstrap/cache
 # Runtime stage
 FROM php:8.3-fpm
 
+# Install system dependencies for PHP extensions
+RUN apt-get update && apt-get install -y \
+    libpng-dev \
+    libonig-dev \
+    libxml2-dev \
+    libzip-dev \
+    && rm -rf /var/lib/apt/lists/*
+
 # Install nginx
 RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
 
