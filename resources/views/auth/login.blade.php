@@ -90,12 +90,6 @@
                 <div class="relative flex justify-center text-xs uppercase"><span class="px-3 bg-white text-slate-400 font-bold tracking-widest text-[10px] sm:text-xs">Akses Kredensial</span></div>
             </div>
 
-            <div class="bg-slate-50 border border-slate-200/60 rounded-xl p-3.5 text-center">
-                <p class="text-[11px] sm:text-xs text-slate-500 font-medium whitespace-normal sm:whitespace-nowrap overflow-hidden text-ellipsis">
-                    <span class="text-indigo-600 font-bold">ID:</span> admin@smedchecker.com <span class="text-slate-300 mx-1.5">|</span> <span class="text-indigo-600 font-bold">Pass:</span> admin123
-                </p>
-            </div>
-
             <div class="mt-6 text-center">
                 <a href="{{ route('landing') }}" class="inline-flex items-center space-x-2 text-xs font-bold text-slate-400 hover:text-indigo-600 uppercase tracking-wider transition-colors duration-200 group">
                     <i class="fa-solid fa-arrow-left group-hover:-translate-x-0.5 transition-transform"></i>
