@@ -31,6 +31,10 @@ RUN chmod -R 755 storage bootstrap/cache
 # Enable mod_rewrite
 RUN a2enmod rewrite
 
+# Disable conflicting MPM modules
+RUN a2dismod mpm_worker mpm_event || true
+RUN a2enmod mpm_prefork
+
 # Configure Apache to serve from public folder
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
 
