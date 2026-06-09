@@ -51,22 +51,23 @@ COPY --from=builder /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
 COPY --from=builder --chown=www-data:www-data /var/www/html /var/www/html
 
 # Configure nginx
-RUN mkdir -p /etc/nginx/sites-enabled && \
-    echo 'server { \
-        listen 80; \
-        server_name _; \
-        root /var/www/html/public; \
-        index index.php; \
-        location / { \
-            try_files $uri $uri/ /index.php?$query_string; \
-        } \
-        location ~ \.php$ { \
-            fastcgi_pass 127.0.0.1:9000; \
-            fastcgi_index index.php; \
-            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
-            include fastcgi_params; \
-        } \
-    }' > /etc/nginx/sites-enabled/default
+RUN mkdir -p /etc/nginx/sites-enabled && cat > /etc/nginx/sites-enabled/default <<'EOF'
+server {
+    listen 80;
+    server_name _;
+    root /var/www/html/public;
+    index index.php;
+    location / {
+        try_files $uri $uri/ /index.php?$query_string;
+    }
+    location ~ \.php$ {
+        fastcgi_pass 127.0.0.1:9000;
+        fastcgi_index index.php;
+        fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name;
+        include fastcgi_params;
+    }
+}
+EOF
 
 # Create startup script
 RUN echo '#!/bin/bash\nphp-fpm -D\nnginx -g "daemon off;"' > /start.sh && chmod +x /start.sh
