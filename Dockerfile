@@ -31,9 +31,8 @@ RUN chmod -R 755 storage bootstrap/cache
 # Enable mod_rewrite
 RUN a2enmod rewrite
 
-# Create Apache config to disable conflicting MPM modules
-RUN echo "LoadModule mpm_prefork_module modules/mod_mpm_prefork.so" > /etc/apache2/mods-enabled/mpm_prefork.load && \
-    rm -f /etc/apache2/mods-enabled/mpm_worker.load /etc/apache2/mods-enabled/mpm_event.load /etc/apache2/mods-enabled/mpm_worker.conf /etc/apache2/mods-enabled/mpm_event.conf
+# Remove conflicting MPM modules - keep only prefork
+RUN rm -f /etc/apache2/mods-enabled/mpm_worker.* /etc/apache2/mods-enabled/mpm_event.*
 
 # Configure Apache to serve from public folder
 RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
