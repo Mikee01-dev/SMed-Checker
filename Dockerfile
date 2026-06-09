@@ -1,4 +1,5 @@
-FROM php:8.3-apache
+# Build stage
+FROM php:8.3-fpm as builder
 
 # Install dependencies
 RUN apt-get update && apt-get install -y \
@@ -28,17 +29,40 @@ RUN composer install --no-dev --optimize-autoloader
 RUN chown -R www-data:www-data storage bootstrap/cache
 RUN chmod -R 755 storage bootstrap/cache
 
-# Enable mod_rewrite
-RUN a2enmod rewrite
+# Runtime stage
+FROM php:8.3-fpm
 
-# Remove all MPM module files - Apache will use built-in default
-RUN rm -f /etc/apache2/mods-enabled/mpm_*.load /etc/apache2/mods-enabled/mpm_*.conf
+# Install nginx
+RUN apt-get update && apt-get install -y nginx && rm -rf /var/lib/apt/lists/*
 
-# Configure Apache to serve from public folder
-RUN sed -i 's!/var/www/html!/var/www/html/public!g' /etc/apache2/sites-available/000-default.conf
+# Copy PHP extensions from builder
+COPY --from=builder /usr/local/lib/php/extensions /usr/local/lib/php/extensions
+COPY --from=builder /usr/local/etc/php/conf.d /usr/local/etc/php/conf.d
 
-# Expose port
+# Copy application from builder
+COPY --from=builder --chown=www-data:www-data /var/www/html /var/www/html
+
+# Configure nginx
+RUN mkdir -p /etc/nginx/sites-enabled && \
+    echo 'server { \
+        listen 80; \
+        server_name _; \
+        root /var/www/html/public; \
+        index index.php; \
+        location / { \
+            try_files $uri $uri/ /index.php?$query_string; \
+        } \
+        location ~ \.php$ { \
+            fastcgi_pass 127.0.0.1:9000; \
+            fastcgi_index index.php; \
+            fastcgi_param SCRIPT_FILENAME $document_root$fastcgi_script_name; \
+            include fastcgi_params; \
+        } \
+    }' > /etc/nginx/sites-enabled/default
+
+# Create startup script
+RUN echo '#!/bin/bash\nphp-fpm -D\nnginx -g "daemon off;"' > /start.sh && chmod +x /start.sh
+
 EXPOSE 80
 
-# Start Apache
-CMD ["apache2-foreground"]
+CMD ["/start.sh"]
